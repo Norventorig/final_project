@@ -14,17 +14,17 @@ class BaseModel(Model):
 
 
 class User(BaseModel):
-    chat_id = CharField(max_length=9)
-    user_name = CharField(max_length=30)
-    name = CharField(max_length=20)
-    last_name = CharField(max_length=20, default=None)
+    chat_id = CharField(max_length=9, null=False)
+    user_name = CharField(max_length=30, null=False)
+    name = CharField(max_length=20, null=False)
+    last_name = CharField(max_length=20, null=True)
 
     class Meta:
         db_table = 'users'
 
 
 class History(BaseModel):
-    query_body = CharField(max_length=255)
+    query_body = CharField(max_length=255, null=False)
     author = ForeignKeyField(User)
     date = DateField(default=datetime.datetime.today())
 
