@@ -1,5 +1,8 @@
 {
-    "url": "https://imdb-top-100-movies.p.rapidapi.com/",
+    "base_url": "https://imdb-top-100-movies.p.rapidapi.com/",
+    "movie_data": "https://imdb-top-100-movies.p.rapidapi.com/top{}",
+    "series": "https://imdb-top-100-movies.p.rapidapi.com/series/",
+    "series_data": "https://imdb-top-100-movies.p.rapidapi.com/series/top{}",
     "headers": {
                 "x-rapidapi-key": "8b209d69afmsh68c53e8c836a117p155613jsn70d92384a9d1",
                 "x-rapidapi-host": "imdb-top-100-movies.p.rapidapi.com"
