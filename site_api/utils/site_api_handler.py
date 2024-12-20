@@ -11,7 +11,7 @@ def _get(url: str = '', number: int = 1) -> object:
     return response
 
 
-class SiteApiHandler:
+class SiteApiInterfacer:
     @staticmethod
     def get_movies() -> object:
         return _get(url='base_url')
