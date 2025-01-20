@@ -1,5 +1,5 @@
 from typing import List, Dict
-from ..common.models import *
+from database.common.models import *
 from peewee import Expression
 
 
