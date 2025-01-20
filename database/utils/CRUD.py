@@ -1,9 +1,12 @@
-from typing import List, Dict
+from typing import List, Dict, TypeVar
 from database.common.models import *
 from peewee import Expression
 
 
-def _create(model: BaseModel, data: List[Dict]) -> None:
+T = TypeVar('T')
+
+
+def _create(model: T, data: List[Dict]) -> None:
     with db:
         model.insert_many(data).execute()
 
@@ -15,19 +18,19 @@ def _retrieve_all_history() -> List[History]:
     return list(all_history)
 
 
-def _update(model: BaseModel, changes: dict, conditions: Expression) -> None:
+def _update(model: T, changes: dict, conditions: Expression) -> None:
     with db:
         model.update(**changes).where(conditions).execute()
 
 
-def _delete(model: BaseModel, conditions: Expression) -> None:
+def _delete(model: T, conditions: Expression) -> None:
     with db:
         model.delete().where(conditions).execute()
 
 
 class CRUD_interface:
     @staticmethod
-    def create(model: BaseModel, data: List[Dict]) -> None:
+    def create(model: T, data: List[Dict]) -> None:
         return _create(model, data)
 
     @staticmethod
@@ -35,9 +38,9 @@ class CRUD_interface:
         return _retrieve_all_history()
 
     @staticmethod
-    def update(model: BaseModel, changes: dict, conditions: Expression) -> None:
+    def update(model: T, changes: dict, conditions: Expression) -> None:
         return _update(model, changes, conditions)
 
     @staticmethod
-    def delete(model: BaseModel, conditions: Expression) -> None:
+    def delete(model: T, conditions: Expression) -> None:
         return _delete(model, conditions)
