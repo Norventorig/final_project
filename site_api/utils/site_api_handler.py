@@ -40,7 +40,7 @@ def _get_100_series(timeout=10, func=_make_response):
                 timeout=timeout)
 
 
-def _get_movie_by_id(top: int = 1, timeout=10, func=_make_response):
+def _get_movie_by_id(top: int, timeout: int = 10, func=_make_response):
     method = 'get'
     url = site_settings.movie_data.get_secret_value().format(top)
 
@@ -49,7 +49,7 @@ def _get_movie_by_id(top: int = 1, timeout=10, func=_make_response):
                 timeout=timeout)
 
 
-def _get_series_by_id(top: int = 1, timeout=10, func=_make_response):
+def _get_series_by_id(top: int, timeout: int = 10, func=_make_response):
     method = 'get'
     url = site_settings.series_data.get_secret_value().format(top)
 
@@ -68,9 +68,9 @@ class SiteAPIHandler:
         return _get_100_series()
 
     @staticmethod
-    def get_movie_by_id():
-        return _get_movie_by_id()
+    def get_movie_by_id(top: int = 1):
+        return _get_movie_by_id(top=top)
 
     @staticmethod
-    def get_series_by_id():
-        return _get_series_by_id()
+    def get_series_by_id(top: int = 1):
+        return _get_series_by_id(top=top)
