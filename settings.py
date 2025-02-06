@@ -15,3 +15,6 @@ class SiteSettings(BaseSettings):
     rapidapi_key: SecretStr = os.getenv('X-RAPIDAPI-KEY')
     rapidapi_host: SecretStr = os.getenv('X-RAPIDAPI-HOST')
     tg_token: SecretStr = os.getenv('TOKEN')
+
+
+site_settings = SiteSettings()
