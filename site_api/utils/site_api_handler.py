@@ -1,8 +1,5 @@
 import requests
-from settings import SiteSettings
-
-
-site_settings = SiteSettings()
+from settings import site_settings
 
 
 def _make_response(method: str, url: str, timeout: int, success=200):
