@@ -123,7 +123,3 @@ class BotHandler:
 
 
 tg_bot = telebot.TeleBot(site_settings.tg_token.get_secret_value())
-
-
-if __name__ == "__main__":
-    tg_bot.infinity_polling()
