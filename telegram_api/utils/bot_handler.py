@@ -123,7 +123,6 @@ class BotHandler:
 
 
 tg_bot = telebot.TeleBot(site_settings.tg_token.get_secret_value())
-bot_handler = BotHandler(tg_bot)
 
 
 if __name__ == "__main__":

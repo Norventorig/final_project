@@ -1,4 +1,4 @@
-from telegram_api.utils.bot_handler import bot_handler
+from telegram_api.utils.bot_handler import BotHandler, tg_bot
 
 
-bot_handler.bot.infinity_polling()
+bot_handler = BotHandler(tg_bot)
