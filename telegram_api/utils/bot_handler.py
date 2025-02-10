@@ -1,5 +1,4 @@
 from telebot import TeleBot
-from site_api.core import site_api_handler
 from telegram_api.utils.IMDB_data_handler import imdb_data_handler
 from telegram_api.utils.bot_keyboards import main_menu_keyboard, \
                                                 default_navigation_keyboard, \
