@@ -11,11 +11,11 @@ def _create(model: T, data: List[Dict]) -> None:
         model.insert_many(data).execute()
 
 
-def _retrieve_all_history() -> List[History]:
+def _retrieve(model: T, conditions: Expression) -> List[BaseModel]:
     with db:
-        all_history = History.select()
+        data = model.select().where(conditions).execute()
 
-    return list(all_history)
+    return list(data)
 
 
 def _update(model: T, changes: dict, conditions: Expression) -> None:
@@ -34,8 +34,8 @@ class CRUD_interface:
         return _create(model, data)
 
     @staticmethod
-    def retrieve_all_history() -> List[History]:
-        return _retrieve_all_history()
+    def retrieve(model: T, conditions: Expression) -> List[BaseModel]:
+        return _retrieve(model, conditions)
 
     @staticmethod
     def update(model: T, changes: dict, conditions: Expression) -> None:
