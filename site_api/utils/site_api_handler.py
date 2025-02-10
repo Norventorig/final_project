@@ -18,69 +18,46 @@ def _make_response(method: str, url: str, timeout: int, host: str, key: str, suc
     return response.status_code
 
 
-def _get_100_movies(url: str, host: str, key: str, timeout: int = 10, func=_make_response):
-    method = 'get'
-
-    return func(method=method,
-                url=url,
-                timeout=timeout,
-                host=host,
-                key=key)
-
-
-def _get_100_series(url: str, host: str, key: str, timeout: int = 10, func=_make_response):
-    method = 'get'
-
-    return func(method=method,
-                url=url,
-                timeout=timeout,
-                host=host,
-                key=key)
-
-
-def _get_movie_by_id(url: str, host: str, key: str, top: int, timeout: int = 10, func=_make_response):
-    method = 'get'
-    url = url.format(top)
-
-    return func(method=method,
-                url=url,
-                timeout=timeout,
-                host=host,
-                key=key)
-
-
-def _get_series_by_id(url: str, host: str, key: str, top: int, timeout: int = 10, func=_make_response):
-    method = 'get'
-    url = url.format(top)
-
-    return func(method=method,
-                url=url,
-                timeout=timeout,
-                host=host,
-                key=key)
-
-
 class SiteAPIHandler:
-    @staticmethod
-    def get_100_movies(url: str, host: str, key: str):
-        return _get_100_movies(url=url,
-                               host=host,
-                               key=key)
+    def __init__(self,
+                 host: str,
+                 key: str,
+                 get_100_movies_url: str,
+                 get_100_series_url: str,
+                 get_movie_by_id_url: str,
+                 get_series_by_id_url: str):
 
-    @staticmethod
-    def get_100_series(url: str, host: str, key: str):
-        return _get_100_series(url=url,
-                               host=host,
-                               key=key)
+        self.host = host
+        self.key = key
+        self.get_100_movies_url = get_100_movies_url
+        self.get_100_series_url = get_100_series_url
+        self.get_movie_by_id_url = get_movie_by_id_url
+        self.get_series_by_id_url = get_series_by_id_url
 
-    @staticmethod
-    def get_movie_by_id(url: str, host: str, key: str, top: int = 1):
-        return _get_movie_by_id(top=top, url=url,
-                                host=host,
-                                key=key)
+    def get_100_movies(self):
+        return _make_response(method='get',
+                              url=self.get_100_movies_url,
+                              timeout=10,
+                              host=self.host,
+                              key=self.key)
 
-    @staticmethod
-    def get_series_by_id(url: str, host: str, key: str, top: int = 1):
-        return _get_series_by_id(top=top, url=url,
-                                 host=host,
-                                 key=key)
+    def get_100_series(self):
+        return _make_response(method='get',
+                              url=self.get_100_series_url,
+                              timeout=10,
+                              host=self.host,
+                              key=self.key)
+
+    def get_movie_by_id(self, top: int = 1):
+        return _make_response(method='get',
+                              url=self.get_movie_by_id_url.format(top),
+                              timeout=10,
+                              host=self.host,
+                              key=self.key)
+
+    def get_series_by_id(self, top: int = 1):
+        return _make_response(method='get',
+                              url=self.get_series_by_id_url.format(top),
+                              timeout=10,
+                              host=self.host,
+                              key=self.key)
