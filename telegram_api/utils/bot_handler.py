@@ -1,7 +1,5 @@
-import telebot
 from telebot import TeleBot
 from site_api.core import site_api_handler
-from settings import site_settings
 from telegram_api.utils.IMDB_data_handler import imdb_data_handler
 from telegram_api.utils.bot_keyboards import main_menu_keyboard, \
                                                 default_navigation_keyboard, \
@@ -10,7 +8,7 @@ from telegram_api.utils.bot_keyboards import main_menu_keyboard, \
 
 
 class BotHandler:
-    def __init__(self, bot: TeleBot):
+    def __init__(self, bot: TeleBot, movie_by_id_function, series_by_id_function):
         self.bot = bot
         self.bot.navigation_keyboard_without_next = navigation_keyboard_without_next
         self.bot.main_menu_keyboard = main_menu_keyboard
@@ -18,6 +16,8 @@ class BotHandler:
         self.bot.navigation_keyboard_without_previous = navigation_keyboard_without_previous
         self.bot.user_waiting_for_input = {}
         self.register_handlers()
+        self.movie_by_id_function = movie_by_id_function
+        self.series_by_id_function = series_by_id_function
 
     def register_handlers(self):
         self.bot.register_message_handler(self.start, commands=['start'])
@@ -87,11 +87,11 @@ class BotHandler:
 
         if call.data == 'movie_by_id':
             imdb_data_handler.media_id = int(message.text)
-            imdb_data_handler.processing_func = site_api_handler.get_movie_by_id
+            imdb_data_handler.processing_func = self.movie_by_id_function
 
         else:
             imdb_data_handler.media_id = int(message.text)
-            imdb_data_handler.processing_func = site_api_handler.get_series_by_id
+            imdb_data_handler.processing_func = self.series_by_id_function
 
         del self.bot.user_waiting_for_input[message.from_user.id]
 
@@ -107,11 +107,11 @@ class BotHandler:
         else:
             if call.data == 'movies':
                 imdb_data_handler.media_id = 1
-                imdb_data_handler.processing_func = site_api_handler.get_movie_by_id
+                imdb_data_handler.processing_func = self.movie_by_id_function
 
             elif call.data == 'series':
                 imdb_data_handler.media_id = 1
-                imdb_data_handler.processing_func = site_api_handler.get_series_by_id
+                imdb_data_handler.processing_func = self.series_by_id_function
 
             elif call.data == 'next':
                 imdb_data_handler.media_id += 1
@@ -120,6 +120,3 @@ class BotHandler:
                 imdb_data_handler.media_id -= 1
 
             self.send_data(call=call)
-
-
-tg_bot = telebot.TeleBot(site_settings.tg_token.get_secret_value())
