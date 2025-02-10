@@ -15,7 +15,7 @@ class BaseModel(Model):
 
 class User(BaseModel):
     chat_id = PrimaryKeyField(unique=True)
-    user_name = CharField(max_length=30, null=False)
+    user_name = CharField(max_length=30, null=True)
     name = CharField(max_length=20, null=False)
     last_name = CharField(max_length=20, null=True)
 
