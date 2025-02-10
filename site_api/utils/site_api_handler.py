@@ -1,11 +1,10 @@
 import requests
-from settings import site_settings
 
 
-def _make_response(method: str, url: str, timeout: int, success=200):
+def _make_response(method: str, url: str, timeout: int, host: str, key: str, success=200):
     headers = {
-        'X-RapidAPI-Key': site_settings.rapidapi_key.get_secret_value(),
-        'X-RapidAPI-Host': site_settings.rapidapi_host.get_secret_value()
+        'X-RapidAPI-Key': key,
+        'X-RapidAPI-Host': host
     }
 
     response = requests.request(method=method,
@@ -19,55 +18,69 @@ def _make_response(method: str, url: str, timeout: int, success=200):
     return response.status_code
 
 
-def _get_100_movies(timeout=10, func=_make_response):
+def _get_100_movies(url: str, host: str, key: str, timeout: int = 10, func=_make_response):
     method = 'get'
-    url = site_settings.base_url.get_secret_value()
 
     return func(method=method,
                 url=url,
-                timeout=timeout)
+                timeout=timeout,
+                host=host,
+                key=key)
 
 
-def _get_100_series(timeout=10, func=_make_response):
+def _get_100_series(url: str, host: str, key: str, timeout: int = 10, func=_make_response):
     method = 'get'
-    url = site_settings.series.get_secret_value()
 
     return func(method=method,
                 url=url,
-                timeout=timeout)
+                timeout=timeout,
+                host=host,
+                key=key)
 
 
-def _get_movie_by_id(top: int, timeout: int = 10, func=_make_response):
+def _get_movie_by_id(url: str, host: str, key: str, top: int, timeout: int = 10, func=_make_response):
     method = 'get'
-    url = site_settings.movie_data.get_secret_value().format(top)
+    url = url.format(top)
 
     return func(method=method,
                 url=url,
-                timeout=timeout)
+                timeout=timeout,
+                host=host,
+                key=key)
 
 
-def _get_series_by_id(top: int, timeout: int = 10, func=_make_response):
+def _get_series_by_id(url: str, host: str, key: str, top: int, timeout: int = 10, func=_make_response):
     method = 'get'
-    url = site_settings.series_data.get_secret_value().format(top)
+    url = url.format(top)
 
     return func(method=method,
                 url=url,
-                timeout=timeout)
+                timeout=timeout,
+                host=host,
+                key=key)
 
 
 class SiteAPIHandler:
     @staticmethod
-    def get_100_movies():
-        return _get_100_movies()
+    def get_100_movies(url: str, host: str, key: str):
+        return _get_100_movies(url=url,
+                               host=host,
+                               key=key)
 
     @staticmethod
-    def get_100_series():
-        return _get_100_series()
+    def get_100_series(url: str, host: str, key: str):
+        return _get_100_series(url=url,
+                               host=host,
+                               key=key)
 
     @staticmethod
-    def get_movie_by_id(top: int = 1):
-        return _get_movie_by_id(top=top)
+    def get_movie_by_id(url: str, host: str, key: str, top: int = 1):
+        return _get_movie_by_id(top=top, url=url,
+                                host=host,
+                                key=key)
 
     @staticmethod
-    def get_series_by_id(top: int = 1):
-        return _get_series_by_id(top=top)
+    def get_series_by_id(url: str, host: str, key: str, top: int = 1):
+        return _get_series_by_id(top=top, url=url,
+                                 host=host,
+                                 key=key)
