@@ -7,7 +7,7 @@ from telegram_api.utils.bot_keyboards import main_menu_keyboard, \
 
 
 class BotHandler:
-    def __init__(self, bot: TeleBot, movie_by_id_function, series_by_id_function):
+    def __init__(self, bot: TeleBot, movie_by_id_function, series_by_id_function, crud, db, user_model, history_model):
         self.bot = bot
         self.bot.navigation_keyboard_without_next = navigation_keyboard_without_next
         self.bot.main_menu_keyboard = main_menu_keyboard
@@ -17,6 +17,27 @@ class BotHandler:
         self.register_handlers()
         self.movie_by_id_function = movie_by_id_function
         self.series_by_id_function = series_by_id_function
+        self.crud = crud
+        self.db = db
+        self.user_model = user_model
+        self.history_model = history_model
+
+    def make_record_db(self, message):
+        with self.db:
+            user = self.crud.retrieve(model=self.user_model, conditions=self.user_model.chat_id == message.chat.id)
+
+            if not user:
+                self.crud.create(model=self.user_model,
+                                 data=[{'chat_id': message.chat.id,
+                                        'user_name': message.from_user.username,
+                                        'name': message.from_user.first_name,
+                                        'last_name': message.from_user.last_name}])
+
+                user = self.crud.retrieve(model=self.user_model,
+                                          conditions=self.user_model.chat_id == message.chat.id)
+
+            self.crud.create(model=self.history_model,
+                             data=[{'query_body': message.text, 'author': user[0]}])
 
     def register_handlers(self):
         self.bot.register_message_handler(self.start, commands=['start'])
@@ -42,6 +63,8 @@ class BotHandler:
                               text='Я тг бот IMDB! '
                                  'Мои задача - ознакомить вас с лучшими фильмами и сериалами по мнению IMDB',
                               reply_markup=self.bot.main_menu_keyboard)
+
+        self.make_record_db(message=message)
 
     def antispam(self, message):
         self.bot.delete_message(message.chat.id, message.message_id)
