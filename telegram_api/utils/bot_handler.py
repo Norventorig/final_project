@@ -89,7 +89,7 @@ class BotHandler:
     def send_data(self, call):
         movie_data = imdb_data_handler.processing_func(imdb_data_handler.media_id)
 
-        if movie_data != 400:
+        if movie_data == 200:
             movie_data = movie_data.json()
 
             new_text = f'{movie_data["thumbnail"]}\n' \
