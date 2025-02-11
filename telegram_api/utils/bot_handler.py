@@ -117,6 +117,9 @@ class BotHandler:
 
         del self.bot.user_waiting_for_input[message.from_user.id]
 
+        call.message.text = call.data + message.text
+        self.make_record_db(call.message)
+
         self.send_data(call=call)
 
     def imdb_data_handler(self, call):
@@ -142,3 +145,6 @@ class BotHandler:
                 imdb_data_handler.media_id -= 1
 
             self.send_data(call=call)
+
+        call.message.text = call.data
+        self.make_record_db(message=call.message)
