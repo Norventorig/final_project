@@ -37,27 +37,27 @@ class SiteAPIHandler:
     def get_100_movies(self):
         return _make_response(method='get',
                               url=self.get_100_movies_url,
-                              timeout=10,
+                              timeout=30,
                               host=self.host,
                               key=self.key)
 
     def get_100_series(self):
         return _make_response(method='get',
                               url=self.get_100_series_url,
-                              timeout=10,
+                              timeout=30,
                               host=self.host,
                               key=self.key)
 
     def get_movie_by_id(self, top: int = 1):
         return _make_response(method='get',
                               url=self.get_movie_by_id_url.format(top),
-                              timeout=10,
+                              timeout=30,
                               host=self.host,
                               key=self.key)
 
     def get_series_by_id(self, top: int = 1):
         return _make_response(method='get',
                               url=self.get_series_by_id_url.format(top),
-                              timeout=10,
+                              timeout=30,
                               host=self.host,
                               key=self.key)
