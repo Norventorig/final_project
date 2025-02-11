@@ -42,6 +42,8 @@ class BotHandler:
     def register_handlers(self):
         self.bot.register_message_handler(self.start, commands=['start'])
 
+        self.bot.register_message_handler(self.history, commands=['history'])
+
         self.bot.register_message_handler(self.antispam,
                                           func=lambda message: message.chat.id not in self.bot.user_waiting_for_input,
                                           content_types=['text', 'photo', 'sticker', 'video', 'audio'])
@@ -65,6 +67,21 @@ class BotHandler:
                               reply_markup=self.bot.main_menu_keyboard)
 
         self.make_record_db(message=message)
+
+    def history(self, message):
+        self.make_record_db(message=message)
+
+        with self.db:
+            histories = self.crud.retrieve(self.history_model, conditions=self.history_model.author == message.chat.id)
+            histories = '\n'.join([f'{i.query_body} -- {i.date}' for i in histories])
+
+            self.bot.send_message(chat_id=message.chat.id,
+                                  text=histories)
+
+        self.bot.send_message(chat_id=message.chat.id,
+                              text='Я тг бот IMDB! '
+                                 'Мои задача - ознакомить вас с лучшими фильмами и сериалами по мнению IMDB',
+                              reply_markup=self.bot.main_menu_keyboard)
 
     def antispam(self, message):
         self.bot.delete_message(message.chat.id, message.message_id)
