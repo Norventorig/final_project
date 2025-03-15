@@ -3,8 +3,8 @@ import requests
 
 def _make_response(method: str, url: str, timeout: int, host: str, key: str, success=200):
     headers = {
-        'X-RapidAPI-Key': key,
-        'X-RapidAPI-Host': host
+        'x-rapidapi-key': key,
+        'x-rapidapi-host': host
     }
 
     response = requests.request(method=method,
