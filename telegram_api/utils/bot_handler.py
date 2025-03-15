@@ -9,18 +9,23 @@ from telegram_api.utils.bot_keyboards import main_menu_keyboard, \
 class BotHandler:
     def __init__(self, bot: TeleBot, movie_by_id_function, series_by_id_function, crud, db, user_model, history_model):
         self.bot = bot
-        self.bot.navigation_keyboard_without_next = navigation_keyboard_without_next
-        self.bot.main_menu_keyboard = main_menu_keyboard
-        self.bot.default_navigation_keyboard = default_navigation_keyboard
-        self.bot.navigation_keyboard_without_previous = navigation_keyboard_without_previous
-        self.bot.user_waiting_for_input = {}
-        self.register_handlers()
+
+        self.navigation_keyboard_without_next = navigation_keyboard_without_next
+        self.main_menu_keyboard = main_menu_keyboard
+        self.default_navigation_keyboard = default_navigation_keyboard
+        self.navigation_keyboard_without_previous = navigation_keyboard_without_previous
+
+        self.user_waiting_for_input = {}
+        self.imdb_data_handler = imdb_data_handler
+
         self.movie_by_id_function = movie_by_id_function
         self.series_by_id_function = series_by_id_function
         self.crud = crud
         self.db = db
         self.user_model = user_model
         self.history_model = history_model
+
+        self.register_handlers()
 
     def make_record_db(self, message):
         with self.db:
@@ -45,16 +50,16 @@ class BotHandler:
         self.bot.register_message_handler(self.history, commands=['history'])
 
         self.bot.register_message_handler(self.antispam,
-                                          func=lambda message: message.chat.id not in self.bot.user_waiting_for_input,
+                                          func=lambda message: message.chat.id not in self.user_waiting_for_input,
                                           content_types=['text', 'photo', 'sticker', 'video', 'audio'])
 
         self.bot.register_message_handler(self.process_user_input,
-                                          func=lambda message: message.chat.id in self.bot.user_waiting_for_input)
+                                          func=lambda message: message.chat.id in self.user_waiting_for_input)
 
         self.bot.register_callback_query_handler(self.ask_for_media_id,
                                                  func=lambda call: call.data in ('series_by_id', 'movie_by_id'))
 
-        self.bot.register_callback_query_handler(self.imdb_data_handler,
+        self.bot.register_callback_query_handler(self.user_handler,
                                                  func=lambda call: call.data in
                                                                    ('movies', 'series', 'next', 'previous', 'back'))
 
@@ -64,7 +69,7 @@ class BotHandler:
         self.bot.send_message(chat_id=message.chat.id,
                               text='Я тг бот IMDB! '
                                  'Мои задача - ознакомить вас с лучшими фильмами и сериалами по мнению IMDB',
-                              reply_markup=self.bot.main_menu_keyboard)
+                              reply_markup=self.main_menu_keyboard)
 
         self.make_record_db(message=message)
 
@@ -81,15 +86,15 @@ class BotHandler:
         self.bot.send_message(chat_id=message.chat.id,
                               text='Я тг бот IMDB! '
                                  'Мои задача - ознакомить вас с лучшими фильмами и сериалами по мнению IMDB',
-                              reply_markup=self.bot.main_menu_keyboard)
+                              reply_markup=self.main_menu_keyboard)
 
     def antispam(self, message):
         self.bot.delete_message(message.chat.id, message.message_id)
 
     def send_data(self, call):
-        movie_data = imdb_data_handler.processing_func(imdb_data_handler.media_id)
+        movie_data = self.imdb_data_handler.processing_func(self.imdb_data_handler.media_id)
 
-        if movie_data == 200:
+        if movie_data.status_code == 200:
             movie_data = movie_data.json()
 
             new_text = f'{movie_data["thumbnail"]}\n' \
@@ -103,11 +108,11 @@ class BotHandler:
             self.bot.edit_message_text(text=new_text,
                                        chat_id=call.message.chat.id,
                                        message_id=call.message.id,
-                                       reply_markup=self.bot.default_navigation_keyboard
-                                       if 100 > imdb_data_handler.media_id > 1 else
-                                       (self.bot.navigation_keyboard_without_previous
-                                        if imdb_data_handler.media_id == 1 else
-                                        self.bot.navigation_keyboard_without_next))
+                                       reply_markup=self.default_navigation_keyboard
+                                       if 100 > self.imdb_data_handler.media_id > 1 else
+                                       (self.navigation_keyboard_without_previous
+                                        if self.imdb_data_handler.media_id == 1 else
+                                        self.navigation_keyboard_without_next))
 
         else:
             self.bot.answer_callback_query(call.id, text='Что то пошло не так')
@@ -117,49 +122,49 @@ class BotHandler:
                                    chat_id=call.message.chat.id,
                                    message_id=call.message.id)
 
-        self.bot.user_waiting_for_input[call.message.chat.id] = call
+        self.user_waiting_for_input[call.message.chat.id] = call
 
     def process_user_input(self, message):
-        call = self.bot.user_waiting_for_input[message.chat.id]
+        call = self.user_waiting_for_input[message.chat.id]
         self.bot.delete_message(chat_id=message.chat.id,
                                 message_id=message.message_id)
 
         if call.data == 'movie_by_id':
-            imdb_data_handler.media_id = int(message.text)
-            imdb_data_handler.processing_func = self.movie_by_id_function
+            self.imdb_data_handler.media_id = int(message.text)
+            self.imdb_data_handler.processing_func = self.movie_by_id_function
 
         else:
-            imdb_data_handler.media_id = int(message.text)
-            imdb_data_handler.processing_func = self.series_by_id_function
+            self.imdb_data_handler.media_id = int(message.text)
+            self.imdb_data_handler.processing_func = self.series_by_id_function
 
-        del self.bot.user_waiting_for_input[message.from_user.id]
+        del self.user_waiting_for_input[message.from_user.id]
 
         call.message.text = call.data + message.text
         self.make_record_db(call.message)
 
         self.send_data(call=call)
 
-    def imdb_data_handler(self, call):
+    def user_handler(self, call):
         if call.data == 'back':
             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                        text='Я тг бот IMDB! Мои задача - '
                                             'ознакомить вас с лучшими фильмами и сериалами по мнению IMDB',
-                                       reply_markup=self.bot.main_menu_keyboard, message_id=call.message.id)
+                                       reply_markup=self.main_menu_keyboard, message_id=call.message.id)
 
         else:
             if call.data == 'movies':
-                imdb_data_handler.media_id = 1
-                imdb_data_handler.processing_func = self.movie_by_id_function
+                self.imdb_data_handler.media_id = 1
+                self.imdb_data_handler.processing_func = self.movie_by_id_function
 
             elif call.data == 'series':
-                imdb_data_handler.media_id = 1
-                imdb_data_handler.processing_func = self.series_by_id_function
+                self.imdb_data_handler.media_id = 1
+                self.imdb_data_handler.processing_func = self.series_by_id_function
 
             elif call.data == 'next':
-                imdb_data_handler.media_id += 1
+                self.imdb_data_handler.media_id += 1
 
             elif call.data == 'previous':
-                imdb_data_handler.media_id -= 1
+                self.imdb_data_handler.media_id -= 1
 
             self.send_data(call=call)
 
