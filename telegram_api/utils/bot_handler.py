@@ -27,7 +27,7 @@ class BotHandler:
 
         self.register_handlers()
 
-    def make_record_db(self, message):
+    def make_record_db(self, message, query_body):
         with self.db:
             user = self.crud.retrieve(model=self.user_model, conditions=self.user_model.chat_id == message.chat.id)
 
@@ -42,7 +42,7 @@ class BotHandler:
                                           conditions=self.user_model.chat_id == message.chat.id)
 
             self.crud.create(model=self.history_model,
-                             data=[{'query_body': message.text, 'author': user[0]}])
+                             data=[{'query_body': query_body, 'author': user[0]}])
 
     def register_handlers(self):
         self.bot.register_message_handler(self.start, commands=['start'])
@@ -71,11 +71,7 @@ class BotHandler:
                                  'Мои задача - ознакомить вас с лучшими фильмами и сериалами по мнению IMDB',
                               reply_markup=self.main_menu_keyboard)
 
-        self.make_record_db(message=message)
-
     def history(self, message):
-        self.make_record_db(message=message)
-
         with self.db:
             histories = self.crud.retrieve(self.history_model, conditions=self.history_model.author == message.chat.id)
             histories = '\n'.join([f'{i.query_body} -- {i.date}' for i in histories])
@@ -114,8 +110,11 @@ class BotHandler:
                                         if self.imdb_data_handler.media_id == 1 else
                                         self.navigation_keyboard_without_next))
 
+            self.make_record_db(message=call.message, query_body=movie_data)
+
         else:
             self.bot.answer_callback_query(call.id, text='Что то пошло не так')
+            self.make_record_db(message=call.message, query_body='Error')
 
     def ask_for_media_id(self, call):
         self.bot.edit_message_text(text='Отправьте в чат номер произведения о котором вы хотите получить информацию!',
@@ -140,7 +139,6 @@ class BotHandler:
         del self.user_waiting_for_input[message.from_user.id]
 
         call.message.text = call.data + message.text
-        self.make_record_db(call.message)
 
         self.send_data(call=call)
 
@@ -169,4 +167,3 @@ class BotHandler:
             self.send_data(call=call)
 
         call.message.text = call.data
-        self.make_record_db(message=call.message)
